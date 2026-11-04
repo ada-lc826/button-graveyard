@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const out = path.join(here, 'out');
+const STAGE = process.env.STAGE || 'stage.html';
+const out = path.join(here, process.env.OUTDIR || 'out');
 fs.mkdirSync(out, { recursive: true });
 const req = createRequire(import.meta.url);
 let pw; for (const p of [path.join(here, '../node_modules/playwright'), path.join(execSync('npm root -g').toString().trim(), 'playwright'), '/opt/npm-tools/node_modules/playwright']) { try { pw = req(p); break; } catch {} }
@@ -16,7 +17,7 @@ const [mode, ...rest] = process.argv.slice(2);
 
 const browser = await pw.chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
-await page.goto('file://' + path.join(here, 'stage.html'));
+await page.goto('file://' + path.join(here, STAGE));
 await page.evaluate(() => window.ready);
 await page.waitForTimeout(300);
 const scenes = await page.evaluate(() => window.SCENES);
