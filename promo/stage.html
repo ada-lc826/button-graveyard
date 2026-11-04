@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<style>
+:root{--sky:#0b0f1a;--sky2:#151b2d;--ink:#ece8dc;--mute:#9aa0b4;--stone:#2b3044;--stone2:#3d4460;--edge:#4f5677;--blood:#ff3b5c;--moss:#58d68d;--amber:#f5b942}
+*{box-sizing:border-box}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--sky)}
+body{font-family:Inter,"Noto Sans CJK SC",system-ui,sans-serif;color:var(--ink)}
+.serif{font-family:"Bitstream Charter","Noto Serif CJK SC",Georgia,serif}
+.mono{font-family:"DejaVu Sans Mono","Noto Sans CJK SC",monospace}
+#sky{position:absolute;inset:0;background:radial-gradient(900px 700px at 85% 4%,#2e3a66 0%,transparent 60%),linear-gradient(var(--sky),var(--sky2))}
+#moon{position:absolute;right:120px;top:150px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fffbe8,#e9e1c4 60%,#cfc6a5);box-shadow:0 0 160px 40px rgba(255,248,220,.13)}
+.stars i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff}
+.scene{position:absolute;inset:0;opacity:0}
+.center{position:absolute;left:90px;right:90px}
+h1{margin:0;font-weight:700;letter-spacing:-.01em}
+.big{font-size:104px;line-height:1.02}
+.mid{font-size:64px;line-height:1.1}
+.red{color:var(--blood)}.green{color:var(--moss)}.amber{color:var(--amber)}.mute{color:var(--mute)}
+.caret{display:inline-block;width:.08em;height:.9em;background:currentColor;vertical-align:-.08em;margin-left:4px}
+/* browser window */
+.win{position:absolute;left:40px;width:1000px;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 40px 90px rgba(0,0,0,.6);border:1px solid #2a3150}
+.bar{height:54px;background:#e9ebf2;display:flex;align-items:center;gap:10px;padding:0 20px}
+.bar i{width:14px;height:14px;border-radius:50%}
+.url{margin-left:18px;flex:1;height:32px;border-radius:9px;background:#fff;color:#6b7190;font:500 18px Inter,sans-serif;display:flex;align-items:center;padding:0 14px}
+.vp{position:relative;overflow:hidden}
+.vp iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;pointer-events:none}
+.cursor{position:absolute;width:44px;height:44px;z-index:5;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+.ripple{position:absolute;border:4px solid var(--blood);border-radius:50%;z-index:4}
+.cap{font-size:68px;line-height:1.3}
+.cap s{text-decoration-thickness:6px;text-decoration-color:var(--blood)}
+/* terminal */
+.term{position:absolute;left:40px;width:1000px;background:#11162a;border:1px solid #2a3150;border-radius:22px;box-shadow:0 40px 90px rgba(0,0,0,.55);overflow:hidden}
+.term .tb{height:54px;border-bottom:1px solid #262c48;display:flex;align-items:center;gap:10px;padding:0 22px}
+.term .tb i{width:14px;height:14px;border-radius:50%}
+.term pre{margin:0;padding:34px 36px;font:30px/1.5 "DejaVu Sans Mono","Noto Sans CJK SC",monospace;white-space:pre-wrap;color:#d6d9e6;min-height:520px}
+/* stones */
+.ground{position:absolute;left:0;right:0;bottom:0;height:470px;background:linear-gradient(#18291d,#0e1a13)}
+.stone{position:absolute;width:270px;height:370px;background:linear-gradient(170deg,var(--stone2),var(--stone));border:3px solid var(--edge);border-radius:135px 135px 14px 14px;text-align:center;padding:58px 14px 0;box-shadow:inset 0 3px 0 rgba(255,255,255,.07),0 30px 40px -20px #000}
+.stone .rip{font:700 22px "Bitstream Charter",Georgia,serif;letter-spacing:.35em;color:var(--mute)}
+.stone .nm{font:700 36px/1.08 "Bitstream Charter",Georgia,serif;margin-top:22px;min-height:88px;display:flex;align-items:center;justify-content:center}
+.stone .ep{font:26px/1.3 "Noto Sans CJK SC",sans-serif;color:#d8d3c2;margin-top:16px}
+.stone.risen{border-color:var(--moss);box-shadow:0 0 70px rgba(88,214,141,.45),inset 0 3px 0 rgba(255,255,255,.07)}
+.stone.risen .rip{color:var(--moss)}
+.callout{position:absolute;left:50px;right:150px;background:#11162a;border:2px solid var(--amber);border-radius:20px;padding:26px 30px;font:32px/1.4 "DejaVu Sans Mono",monospace;color:var(--amber);box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.callout small{display:block;font:600 24px Inter,sans-serif;color:var(--mute);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase}
+/* diff */
+.diff{position:absolute;left:40px;width:1000px;background:#0f1424;border:1px solid #2a3150;border-radius:22px;padding:34px 0;font:29px/1.65 "DejaVu Sans Mono",monospace;box-shadow:0 40px 90px rgba(0,0,0,.55)}
+.diff div{padding:0 34px;white-space:pre}
+.diff .a{background:rgba(88,214,141,.13);color:#9ff0c0}
+.diff .d{background:rgba(255,59,92,.12);color:#ff9fb0}
+.diff .f{color:var(--mute);font-size:24px;padding-top:10px}
+.chip{display:inline-block;border:2px solid #343b5c;border-radius:999px;padding:12px 24px;font:600 30px Inter,sans-serif;margin:8px 6px;color:var(--ink);background:rgba(255,255,255,.03)}
+.cmd{display:inline-block;background:#11162a;border:2px solid #343b5c;border-radius:18px;padding:24px 30px;font:34px "DejaVu Sans Mono",monospace;color:#d6d9e6}
+.particle{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--moss);box-shadow:0 0 14px var(--moss)}
+</style></head>
+<body>
+<div id="sky"></div><div class="stars" id="stars"></div><div id="moon"></div>
+
+<!-- 1 hook -->
+<section class="scene" id="s1">
+  <div class="center" style="top:640px"><h1 class="serif" style="font-size:120px;line-height:1.15" id="s1a"></h1>
+  <p class="mute" id="s1b" style="font-size:46px;margin-top:46px;opacity:0">看起来，很完整。</p></div>
+</section>
+
+<!-- 2 app -->
+<section class="scene" id="s2">
+  <div class="win" style="top:230px"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><div class="url">localhost:3000</div></div>
+    <div class="vp" style="width:1000px;height:594px"><iframe id="app1" src="../demo/broken/index.html" width="1280" height="760" style="transform:scale(.78125)"></iframe>
+      <svg class="cursor" id="cur1" viewBox="0 0 24 24"><path d="M4 2l16 9-7 2-3 7z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      <div class="ripple" id="rip1"></div></div></div>
+  <div class="center" style="top:960px">
+    <div class="cap" id="c1">导出 CSV → <s class="red">没反应</s></div>
+    <div class="cap" id="c2">分享 → <s class="red">没反应</s></div>
+    <div class="cap" id="c3">筛选 → <s class="red">没反应</s></div>
+    <h1 class="serif mid" id="c4" style="margin-top:60px;font-size:76px">看着做完了，<br><span class="red">其实没有。</span></h1>
+  </div>
+</section>
+
+<!-- 3 question -->
+<section class="scene" id="s3"><div class="center" style="top:620px"><h1 class="serif" style="font-size:128px;line-height:1.25" id="s3w"></h1></div></section>
+
+<!-- 4 terminal -->
+<section class="scene" id="s4">
+  <div class="center" style="top:250px"><h1 class="serif mid">对 Agent 说一句：</h1></div>
+  <div class="term" style="top:470px"><div class="tb"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre id="tpre"></pre></div>
+  <div class="center" style="top:1240px;right:150px"><p class="mute" id="s4n" style="font-size:44px;line-height:1.45;opacity:0">不靠 AI 猜。<br>每条结论都是浏览器里录到的真实事件。</p></div>
+</section>
+
+<!-- 5 graveyard -->
+<section class="scene" id="s5">
+  <div class="center" style="top:170px"><h1 class="serif" style="font-size:110px;line-height:1.15" id="s5t">18 个按钮，<br><span class="red">10 个</span>是摆设。</h1></div>
+  <div class="ground"></div>
+  <div id="yard"></div>
+  <div class="callout" id="s5c" style="top:1500px;opacity:0;font-size:28px"><small>「Share」按钮的遗言</small>console.log("TODO: share dashboard")</div>
+</section>
+
+<!-- 6 buried alive -->
+<section class="scene" id="s6">
+  <div class="center" style="top:230px"><h1 class="serif big amber">还有 4 个，<br>被活埋了。</h1></div>
+  <div class="win" style="top:640px"><div class="vp" style="width:1000px;height:440px"><iframe id="app2" src="../demo/broken/index.html" width="1280" height="760" style="transform:translate(-337px,-298px) scale(1.5)"></iframe>
+    <div id="glow" style="position:absolute;left:0;top:0;bottom:0;width:0;background:repeating-linear-gradient(-45deg,rgba(245,185,66,.28) 0 18px,rgba(245,185,66,.12) 18px 36px);border:4px dashed var(--amber)"></div>
+    <div id="gl" class="mono" style="position:absolute;right:20px;bottom:18px;background:var(--amber);color:#1a1300;font-size:26px;padding:8px 14px;border-radius:8px;opacity:0">&lt;div class="glow"&gt;</div>
+    <svg class="cursor" id="cur2" viewBox="0 0 24 24"><path d="M4 2l16 9-7 2-3 7z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    <div class="ripple" id="rip2" style="border-color:var(--amber)"></div></div></div>
+  <div class="center" style="top:1170px;right:150px"><p class="cap" id="s6c" style="opacity:0;font-size:52px">被一层透明特效盖住，<br><span class="mute">用户怎么点都点不到。</span></p></div>
+</section>
+
+<!-- 7 fix -->
+<section class="scene" id="s7">
+  <div class="center" style="top:220px"><h1 class="serif big" style="line-height:1.2">让 Agent<br>真的修好它们。</h1></div>
+  <div class="diff" id="diff" style="top:560px"></div>
+  <div class="center" style="top:1330px"><p class="amber" id="s7r" style="font-size:46px;opacity:0;line-height:1.4">规矩：不许加假提示<br>糊弄扫描器。</p></div>
+</section>
+
+<!-- 8 risen -->
+<section class="scene" id="s8">
+  <div class="center" style="top:170px"><h1 class="serif" style="font-size:120px;line-height:1.15" id="s8t"><span class="green">9 个按钮</span><br>复活了。</h1></div>
+  <div class="ground"></div>
+  <div id="yard2"></div>
+  <div class="center" style="top:1520px;left:50px;right:150px"><p class="mono mute" id="s8n" style="font-size:32px;opacity:0;margin:0">复扫 --compare · 16 存活 · 0 死亡</p></div>
+</section>
+
+<!-- 9 CTA -->
+<section class="scene" id="s9">
+  <div class="center" style="top:300px;left:40px;right:40px;text-align:center">
+    <div id="logoStone" class="stone" style="position:relative;display:inline-block;width:190px;height:240px;padding-top:58px;border-radius:95px 95px 12px 12px"><div class="rip" style="font-size:18px">R.I.P.</div><div class="serif" style="font-size:30px;font-weight:700;margin-top:14px">button</div></div>
+    <h1 class="serif" style="font-size:100px;margin-top:40px">button-graveyard</h1><div class="serif mute" style="font-size:52px;margin-top:10px;letter-spacing:.3em">按 钮 墓 地</div>
+    <p style="font-size:46px;line-height:1.45;margin:40px 0 54px">逐个点击 · 埋葬死按钮 · <span class="green">证明修好了</span></p>
+    <div class="cmd" id="cmd" style="font-size:31px"></div>
+    <div id="chips" style="margin-top:56px;opacity:0"><span class="chip">Claude Code</span><span class="chip">Codex</span><span class="chip">Cursor</span><span class="chip">Gemini CLI</span><br><span class="chip">无需 API Key</span><span class="chip">开源 MIT</span></div>
+    <p id="gh" style="font-size:38px;margin-top:56px;opacity:0">GitHub 搜 <b>button-graveyard</b> ⭐</p>
+  </div>
+</section>
+
+<script>
+const S = [ // [id, start, end]
+  ['s1', 0, 3.2], ['s2', 3.2, 9.0], ['s3', 9.0, 11.2], ['s4', 11.2, 16.5], ['s5', 16.5, 23.5],
+  ['s6', 23.5, 26.5], ['s7', 26.5, 30.5], ['s8', 30.5, 35.5], ['s9', 35.5, 40.5]];
+window.SCENES = S; window.DURATION = 40.5;
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const ease = (x) => 1 - Math.pow(1 - x, 3);
+const back = (x) => { const c = 1.6; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+const typed = (s, t, a, cps) => s.slice(0, Math.max(0, Math.floor((t - a) * cps)));
+const caret = (t) => (Math.floor(t * 2.4) % 2 ? '' : '<span class="caret"></span>');
+
+// stars (deterministic)
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+for (let i = 0; i < 70; i++) { const s = document.createElement('i'); s.style.left = rnd() * 1080 + 'px'; s.style.top = rnd() * 1100 + 'px'; s.dataset.p = rnd() * 6; s.style.opacity = .2 + rnd() * .5; $('stars').appendChild(s); }
+
+// ------- events (for the soundtrack) -------
+const EV = [];
+const ev = (t, type) => EV.push({ t: +t.toFixed(3), type });
+
+// scene 2 cursor path, in iframe coordinates (1280x760 page)
+const P2 = [ { t: 0, x: 640, y: 700 }, { t: 1.4, x: 1090, y: 40, click: 1.6 }, { t: 2.9, x: 996, y: 40, click: 3.1 }, { t: 4.1, x: 856, y: 247, click: 4.3 } ];
+P2.forEach((p) => p.click && (ev(3.2 + p.click, 'click'), ev(3.2 + p.click + .28, 'womp')));
+function pathAt(P, lt) {
+  let i = 0; while (i < P.length - 1 && lt > P[i + 1].t) i++;
+  if (i >= P.length - 1) return P[P.length - 1];
+  const a = P[i], b = P[i + 1], x = ease(prog(lt, a.t + (a.click ? .25 : 0) + .15, b.t));
+  return { x: lerp(a.x, b.x, x), y: lerp(a.y, b.y, x) };
+}
+
+// scene 5/8 stones
+const STONES = [
+  ['Notifications', '点了，毫无反应'], ['Share', 'console.log("TODO")'], ['Export CSV', '点了，毫无反应'],
+  ['Upgrade to Pro', '点了，毫无反应'], ['Generate summary', '一点就报错'], ['View all →', 'href="#"'] ];
+const POS = [[50, 700], [335, 700], [620, 700], [50, 1100], [335, 1100], [620, 1100]];
+function makeYard(el, prefix) {
+  STONES.forEach(([n, e], i) => {
+    const d = document.createElement('div'); d.className = 'stone'; d.id = prefix + i;
+    d.style.left = POS[i][0] + 'px'; d.style.top = POS[i][1] + 'px';
+    d.innerHTML = `<div class="rip">R.I.P.</div><div class="nm">${n}</div><div class="ep">${e}</div>`;
+    el.appendChild(d);
+  });
+}
+makeYard($('yard'), 'a'); makeYard($('yard2'), 'b');
+const RISE0 = 0.9, RISE_GAP = 0.42;
+STONES.forEach((_, i) => ev(16.5 + RISE0 + i * RISE_GAP + 0.5, 'thud'));
+const RES0 = 0.9, RES_GAP = 0.38;
+STONES.forEach((_, i) => ev(30.5 + RES0 + i * RES_GAP, 'chime'));
+// particles for risen stones
+const parts = [];
+STONES.forEach((_, i) => { for (let k = 0; k < 7; k++) { const p = document.createElement('div'); p.className = 'particle'; $('yard2').appendChild(p); parts.push({ el: p, i, dx: (rnd() - .5) * 260, dy: 140 + rnd() * 260, d: rnd() * .3 }); } });
+
+// scene 4 terminal
+const PROMPT = '帮我找出点了没反应的按钮';
+const GLYPHS = '..?✝✝✝...▣▣▣▣..✝✝✝'; // real order from the demo scan
+for (let i = 0; i < PROMPT.length; i++) ev(11.2 + 0.3 + i / 11, 'tick');
+const G0 = 2.35, GG = 0.075;
+for (let i = 0; i < GLYPHS.length; i++) ev(11.2 + G0 + i * GG, GLYPHS[i] === '.' ? 'tick' : 'blip');
+ev(11.2 + 3.9, 'hit');
+
+// scene 6
+ev(23.5 + 1.55, 'click'); ev(23.5 + 1.75, 'thunk');
+// scene 7 diff
+const DIFF = [
+  ['f', 'index.html'], ['d', '- <button id="export">'], ['a', '+ <button id="export" onclick="exportCsv()">'],
+  ['d', '- onclick="console.log(\'TODO: share\')"'], ['a', '+ onclick="copyLink().then(toast)"'],
+  ['f', 'styles.css'], ['n', '  .glow {'], ['a', '+   pointer-events: none;'], ['n', '  }'],
+  ['f', 'insights.js'], ['d', '- window.lumenAI.summarise()'], ['a', '+ fetch(\'/api/summary\')'] ];
+DIFF.forEach(([k, s]) => { const d = document.createElement('div'); d.className = k === 'n' ? '' : k; d.textContent = s; d.style.opacity = 0; $('diff').appendChild(d); });
+DIFF.forEach((_, i) => ev(26.5 + 0.6 + i * 0.2, 'tick'));
+// scene 9
+const CMD = 'npx skills add ada-lc826/button-graveyard';
+ev(35.5, 'final');
+for (let i = 0; i < CMD.length; i += 2) ev(35.5 + 0.9 + i / 26, 'tick');
+window.EVENTS = EV.sort((a, b) => a.t - b.t);
+
+// ------- render(t) -------
+window.render = function (t) {
+  // global sky
+  $('moon').style.opacity = clamp(t / 1.2);
+  document.querySelectorAll('#stars i').forEach((s) => { s.style.transform = `scale(${0.7 + 0.5 * Math.sin(t * 1.3 + +s.dataset.p)})`; });
+  for (const [id, a, b] of S) {
+    const el = $(id), lt = t - a;
+    const on = t >= a - 0.001 && t < b;
+    if (!on) { el.style.opacity = 0; continue; }
+    const fadeIn = id === 's1' ? 1 : prog(lt, 0, 0.22), fadeOut = 1 - prog(t, b - 0.22, b);
+    el.style.opacity = Math.min(fadeIn, id === 's9' ? 1 - prog(t, b - 0.6, b) : fadeOut);
+    SC[id](lt, b - a);
+  }
+};
+const SC = {
+  s1(lt) {
+    const l1 = 'AI 四分钟', l2 = '写好了这个后台。';
+    const a = typed(l1, lt, 0.25, 9), b = typed(l2, lt, 1.1, 9);
+    $('s1a').innerHTML = a + (a.length < l1.length ? caret(lt) : '<br>' + b + (a.length === l1.length ? caret(lt) : ''));
+    $('s1b').style.opacity = prog(lt, 2.3, 2.7);
+  },
+  s2(lt) {
+    const p = pathAt(P2, lt), k = 0.78125;
+    const c = $('cur1'); c.style.left = p.x * k - 6 + 'px'; c.style.top = p.y * k - 4 + 'px';
+    const clicks = P2.filter((q) => q.click).map((q) => q.click);
+    const last = clicks.filter((x) => lt >= x).pop();
+    const r = $('rip1');
+    if (last !== undefined && lt - last < 0.5) {
+      const q = P2.find((z) => z.click === last), s = 20 + (lt - last) * 140;
+      r.style.width = r.style.height = s + 'px'; r.style.left = q.x * k - s / 2 + 'px'; r.style.top = q.y * k - s / 2 + 'px'; r.style.opacity = 1 - (lt - last) / 0.5;
+      c.style.transform = lt - last < 0.12 ? 'scale(.85)' : 'none';
+    } else r.style.opacity = 0;
+    [['c1', 1.75], ['c2', 3.25], ['c3', 4.45]].forEach(([id, at]) => { const e = $(id), x = prog(lt, at, at + 0.25); e.style.opacity = x; e.style.transform = `translateY(${(1 - ease(x)) * 30}px)`; });
+    const x = prog(lt, 5.0, 5.3); $('c4').style.opacity = x; $('c4').style.transform = `scale(${lerp(1.15, 1, ease(x))})`; $('c4').style.transformOrigin = 'left';
+  },
+  s3(lt) {
+    const words = ['你的按钮', '<br>', '到底有几个', '<br>', '<span class="red">是假的？</span>'];
+    $('s3w').innerHTML = words.map((w, i) => { const x = prog(lt, 0.1 + i * 0.17, 0.1 + i * 0.17 + 0.18); if (w === '<br>') return '<br>'; return `<span style="display:inline-block;opacity:${x};transform:translateY(${(1 - back(x)) * 40}px) scale(${lerp(.8, 1, back(x))})">${w}</span>`; }).join('');
+  },
+  s4(lt) {
+    const typedP = typed(PROMPT, lt, 0.3, 11);
+    let h = `<span style="color:#58d68d">❯</span> ${typedP}${typedP.length < PROMPT.length ? caret(lt) : ''}`;
+    if (lt > 1.95) h += `\n\n<span style="color:#9aa0b4">在全新浏览器里，逐个点击 18 个控件…</span>\n`;
+    if (lt > G0) {
+      const n = Math.min(GLYPHS.length, Math.floor((lt - G0) / GG) + 1);
+      h += [...GLYPHS.slice(0, n)].map((g) => g === '.' ? '<span style="color:#58d68d">.</span>' : g === '?' ? '<span style="color:#9aa0b4">?</span>' : g === '▣' ? `<span style="color:#f5b942">${g}</span>` : `<span style="color:#ff3b5c">${g}</span>`).join('');
+    }
+    if (lt > 3.9) {
+      h += `\n\n  点击了 18 个\n  <span style="color:#58d68d">7 存活</span> · <span style="color:#ff3b5c">6 死亡</span> · <span style="color:#f5b942">4 被活埋</span>\n  <span style="color:#9aa0b4">1 未知 · 1 跳过（退出登录）</span>`;
+    }
+    $('tpre').innerHTML = h;
+    $('s4n').style.opacity = prog(lt, 4.3, 4.6);
+  },
+  s5(lt) {
+    const tx = prog(lt, 0.1, 0.5); $('s5t').style.opacity = tx; $('s5t').style.transform = `translateY(${(1 - ease(tx)) * 40}px)`;
+    STONES.forEach((_, i) => {
+      const x = prog(lt, RISE0 + i * RISE_GAP, RISE0 + i * RISE_GAP + 0.5);
+      const e = $('a' + i);
+      const focus = prog(lt, 4.4, 4.9);
+      const dim = i === 1 ? 1 : lerp(1, 0.35, focus);
+      e.style.opacity = (x > 0 ? 1 : 0) * dim;
+      const sink = (1 - ease(x)) * 420;
+      e.style.clipPath = `inset(-200px -200px ${sink}px -200px)`;
+      const shake = x > 0.98 && lt - (RISE0 + i * RISE_GAP + 0.5) < 0.15 ? Math.sin(lt * 120) * 4 : 0;
+      const sc = i === 1 ? lerp(1, 1.18, ease(focus)) : 1;
+      e.style.transform = `translate(${shake}px, ${sink}px) scale(${sc})`;
+      e.style.zIndex = i === 1 ? 3 : 1;
+    });
+    const c = prog(lt, 4.7, 5.0); $('s5c').style.opacity = c; $('s5c').style.transform = `translateY(${(1 - ease(c)) * 40}px)`;
+  },
+  s6(lt) {
+    const g = ease(prog(lt, 0.35, 1.0));
+    // tabs+filters region in the zoomed iframe: page x 686..905, y 233..262 → zoom 1.5, offset (-337,-298)
+    const L = 686 * 1.5 - 337 - 24, R = 905 * 1.5 - 337 + 24;
+    const gl = $('glow'); gl.style.left = L + 'px'; gl.style.width = (R - L) * g + 'px'; gl.style.top = (225 * 1.5 - 298 - 30) + 'px'; gl.style.height = '120px'; gl.style.bottom = 'auto';
+    $('gl').style.opacity = prog(lt, 0.9, 1.1); $('gl').style.top = (225 * 1.5 - 298 + 100) + 'px'; $('gl').style.bottom = 'auto'; $('gl').style.right = 'auto'; $('gl').style.left = L + 'px';
+    const tx = 856 * 1.5 - 337, ty = 247 * 1.5 - 298;
+    const m = ease(prog(lt, 0.6, 1.45));
+    const c = $('cur2'); c.style.left = lerp(500, tx, m) - 6 + 'px'; c.style.top = lerp(420, ty, m) - 4 + 'px';
+    const r = $('rip2'), d = lt - 1.55;
+    if (d > 0 && d < 0.5) { const s = 20 + d * 120; r.style.width = r.style.height = s + 'px'; r.style.left = tx - s / 2 + 'px'; r.style.top = ty - s / 2 + 'px'; r.style.opacity = 1 - d / 0.5; c.style.transform = `translateY(${-Math.sin(clamp(d / 0.3) * Math.PI) * 26}px)`; }
+    else { r.style.opacity = 0; c.style.transform = 'none'; }
+    $('s6c').style.opacity = prog(lt, 1.8, 2.1);
+  },
+  s7(lt) {
+    [...$('diff').children].forEach((d, i) => { const x = prog(lt, 0.6 + i * 0.2, 0.6 + i * 0.2 + 0.18); d.style.opacity = x; d.style.transform = `translateX(${(1 - ease(x)) * -30}px)`; });
+    $('s7r').style.opacity = prog(lt, 3.1, 3.4);
+  },
+  s8(lt) {
+    const tx = prog(lt, 2.9, 3.3);
+    $('s8t').style.opacity = tx; $('s8t').style.transform = `translateY(${(1 - ease(tx)) * 40}px)`;
+    STONES.forEach((_, i) => {
+      const e = $('b' + i), at = RES0 + i * RES_GAP, x = prog(lt, at, at + 0.35);
+      e.classList.toggle('risen', lt >= at);
+      e.querySelector('.rip').textContent = lt >= at ? 'RISEN' : 'R.I.P.';
+      e.style.transform = `translateY(${-ease(x) * 60 + Math.sin(lt * 2 + i) * (lt >= at ? 6 : 0)}px)`;
+      e.style.opacity = 1;
+    });
+    parts.forEach((p) => {
+      const at = RES0 + p.i * RES_GAP + p.d, x = prog(lt, at, at + 1.1);
+      p.el.style.opacity = x > 0 && x < 1 ? 1 - x : 0;
+      p.el.style.left = POS[p.i][0] + 135 + p.dx * ease(x) + 'px';
+      p.el.style.top = POS[p.i][1] + 120 - p.dy * ease(x) + 'px';
+    });
+    $('s8n').style.opacity = prog(lt, 3.5, 3.8);
+  },
+  s9(lt) {
+    const x = prog(lt, 0, 0.5); $('logoStone').style.transform = `translateY(${(1 - back(x)) * 120}px)`; $('logoStone').style.opacity = x;
+    const c = typed(CMD, lt, 0.9, 26); $('cmd').innerHTML = '<span style="color:#58d68d">❯</span> ' + c + (c.length < CMD.length || Math.floor(lt * 2.4) % 2 ? '<span class="caret"></span>' : '<span class="caret" style="opacity:0"></span>');
+    $('chips').style.opacity = prog(lt, 2.7, 3.0); $('gh').style.opacity = prog(lt, 3.2, 3.5);
+  },
+};
+window.ready = new Promise((r) => { let n = 0; for (const f of document.querySelectorAll('iframe')) f.addEventListener('load', () => ++n === 2 && r(true)); });
+</script>
+</body></html>

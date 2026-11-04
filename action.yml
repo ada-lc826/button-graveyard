@@ -1,0 +1,57 @@
+name: 'Button Graveyard'
+description: 'Click every button in your app and fail the build if any of them do nothing.'
+author: 'ada-lc826'
+branding:
+  icon: 'mouse-pointer'
+  color: 'gray-dark'
+inputs:
+  url:
+    description: 'URL(s) of your running app, space separated (start it in an earlier step)'
+    required: true
+  fail-on-dead:
+    description: 'Fail the job if any control is dead or buried alive'
+    default: 'true'
+  args:
+    description: 'Extra CLI arguments, e.g. --wait 3000 --skip "Beta"'
+    default: ''
+  out:
+    description: 'Output folder'
+    default: '.button-graveyard'
+outputs:
+  dead:
+    description: 'Number of dead controls'
+    value: ${{ steps.scan.outputs.dead }}
+  blocked:
+    description: 'Number of buried-alive controls'
+    value: ${{ steps.scan.outputs.blocked }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Playwright (private cache)
+      shell: bash
+      run: |
+        npm install --silent --prefix ~/.cache/button-graveyard playwright
+        ~/.cache/button-graveyard/node_modules/.bin/playwright install --with-deps chromium
+    - name: Scan
+      id: scan
+      shell: bash
+      run: |
+        set +e
+        node "${{ github.action_path }}/skills/button-graveyard/scripts/graveyard.mjs" ${{ inputs.url }} --out "${{ inputs.out }}" ${{ inputs.args }}
+        code=$?
+        set -e
+        if [ -f "${{ inputs.out }}/graveyard.md" ]; then cat "${{ inputs.out }}/graveyard.md" >> "$GITHUB_STEP_SUMMARY"; fi
+        node -e "const j=require(require('path').resolve('${{ inputs.out }}/graveyard.json'));console.log('dead='+j.counts.dead);console.log('blocked='+j.counts.blocked)" >> "$GITHUB_OUTPUT"
+        exit $code
+    - name: Upload report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: button-graveyard
+        path: ${{ inputs.out }}
+    - name: Fail on dead buttons
+      if: ${{ inputs.fail-on-dead == 'true' && (steps.scan.outputs.dead != '0' || steps.scan.outputs.blocked != '0') }}
+      shell: bash
+      run: |
+        echo "::error::button-graveyard found ${{ steps.scan.outputs.dead }} dead and ${{ steps.scan.outputs.blocked }} buried-alive controls. See the job summary and the report artifact."
+        exit 1

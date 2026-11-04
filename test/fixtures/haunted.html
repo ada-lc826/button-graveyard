@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Haunted fixture</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1100px; }
+  .cell { position: relative; border: 1px solid #ddd; border-radius: 8px; padding: 12px; min-height: 64px; }
+  button, .fake { padding: 8px 12px; }
+  .fake { cursor: pointer; display: inline-block; background: #eef; border-radius: 6px; }
+  .overlay { position: absolute; inset: 0; background: transparent; }
+  .modal { display: none; position: fixed; inset: 30% 30%; background: #fff; border: 2px solid #333; padding: 20px; }
+  .modal.open { display: block; }
+  .ripple-host { position: relative; overflow: hidden; }
+  #far { margin-top: 1600px; }
+</style>
+</head>
+<body>
+<p>Clock (background noise): <span id="clock">0</span></p>
+<div class="grid">
+  <div class="cell"><button data-expect="alive" id="t-dom" onclick="this.textContent='Clicked!'">Change text</button></div>
+  <div class="cell"><button data-expect="dead" id="t-nohandler">Export CSV</button></div>
+  <div class="cell"><button data-expect="dead:stub" id="t-stub" onclick="console.log('TODO: implement share')">Share report</button></div>
+  <div class="cell"><button data-expect="dead:crashed" id="t-throws" onclick="window.analytics.track('x')">Generate summary</button></div>
+
+  <div class="cell"><button data-expect="blocked" id="t-covered" onclick="this.textContent='ok'">Save draft</button><div class="overlay"></div></div>
+  <div class="cell"><button data-expect="alive" id="t-get" onclick="fetch('/api/ping?x=' + Math.random())">Refresh stats</button></div>
+  <div class="cell"><button data-expect="alive:write" id="t-post" onclick="fetch('/api/save', {method:'POST', body:'{}'})">Save settings</button></div>
+  <div class="cell"><button data-expect="alive:slow" id="t-slow" onclick="setTimeout(()=>{this.textContent='Done after 2.5s'},2500)">Run slow job</button></div>
+
+  <div class="cell"><button data-expect="alive" id="t-storage" onclick="localStorage.setItem('theme','dark')">Toggle theme</button></div>
+  <div class="cell"><button data-expect="alive" id="t-clip" onclick="navigator.clipboard.writeText('hello')">Copy link</button></div>
+  <div class="cell"><button data-expect="alive" id="t-alert" onclick="alert('Hi')">Show alert</button></div>
+  <div class="cell"><a data-expect="alive" id="t-nav" href="/page2.html">Go to page 2</a></div>
+
+  <div class="cell"><a data-expect="dead" id="t-emptyhash" href="#">Learn more</a></div>
+  <div class="cell"><a data-expect="alive" id="t-download" download="report.txt" href="data:text/plain,hello">Download report</a></div>
+  <div class="cell"><button data-expect="alive" id="t-popup" onclick="window.open('/page2.html')">Open preview</button></div>
+  <div class="cell"><canvas id="cv" width="80" height="40" style="border:1px solid #ccc"></canvas><button data-expect="alive" id="t-canvas" onclick="const g=document.getElementById('cv').getContext('2d');g.fillStyle='red';g.fillRect(0,0,80,40)">Paint</button></div>
+
+  <div class="cell"><div data-expect="dead" id="t-fakediv" class="fake">Upgrade card</div></div>
+  <div class="cell"><button data-expect="skipped" id="t-danger" onclick="fetch('/api/nuke',{method:'POST'})">Delete account</button></div>
+  <div class="cell"><button data-expect="skipped" id="t-disabled" disabled>Disabled thing</button></div>
+  <div class="cell"><button data-expect="alive" id="t-modal" onclick="document.getElementById('m').classList.add('open')">Open modal</button></div>
+
+  <div class="cell"><button data-expect="dead" id="t-ripple" class="ripple-host" onclick="const s=document.createElement('span');this.appendChild(s);setTimeout(()=>s.remove(),150)">Ripple only</button></div>
+  <div class="cell"><input type="file" id="file" hidden><button data-expect="alive" id="t-upload" onclick="document.getElementById('file').click()">Upload avatar</button></div>
+  <div class="cell"><button data-expect="alive" id="t-aria" aria-pressed="false" onclick="this.setAttribute('aria-pressed', this.getAttribute('aria-pressed')==='true'?'false':'true')">Bold</button></div>
+  <div class="cell"><button data-expect="dead" id="t-icon"><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#555"/></svg></button></div>
+
+  <div class="cell"><a data-expect="alive" id="t-anchor" href="#far">Jump to footer</a></div>
+  <div class="cell"><a data-expect="skipped" id="t-external" href="https://example.com/docs">External docs</a></div>
+  <div class="cell"><button data-expect="alive" id="t-print" onclick="window.print()">Print</button></div>
+  <div class="cell"><button data-expect="unknown" id="t-current" class="tab active">Current tab</button></div>
+  <div class="cell"><button data-expect="alive:write" id="t-form-js" onclick="fetch('/api/feedback',{method:'PUT'})">Rate this</button></div>
+</div>
+<div class="modal" id="m">Modal content</div>
+<p id="far">Footer</p>
+<script>
+  let n = 0;
+  setInterval(() => { document.getElementById('clock').textContent = String(++n); }, 200);
+  setInterval(() => { fetch('/api/poll'); }, 500);
+  fetch('/api/poll');
+</script>
+</body>
+</html>

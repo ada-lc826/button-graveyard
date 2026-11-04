@@ -1,0 +1,14 @@
+{
+  "name": "button-graveyard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent skill: click every button in your app, bury the ones that do nothing.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node test/run.mjs",
+    "demo": "node demo/run-demo.mjs"
+  },
+  "engines": { "node": ">=18" },
+  "devDependencies": { "playwright": "^1.45.0" }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "button-graveyard",
+  "owner": { "name": "Emilie Chen" },
+  "plugins": [
+    {
+      "name": "button-graveyard",
+      "source": "./",
+      "description": "Click every button in your app, bury the ones that do nothing, fix them, prove they're back."
+    }
+  ]
+}

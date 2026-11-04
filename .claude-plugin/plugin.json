@@ -1,0 +1,9 @@
+{
+  "name": "button-graveyard",
+  "version": "0.1.0",
+  "description": "Click every button in your app, bury the ones that do nothing, fix them, prove they're back. Deterministic, no API key.",
+  "author": { "name": "Emilie Chen" },
+  "repository": "https://github.com/ada-lc826/button-graveyard",
+  "license": "MIT",
+  "keywords": ["testing", "playwright", "ui", "vibe-coding", "qa", "dead-click"]
+}
